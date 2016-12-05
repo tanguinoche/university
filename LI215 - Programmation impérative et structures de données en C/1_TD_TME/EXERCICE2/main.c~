@@ -1,0 +1,14 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv) {
+  //problème : convertir argv[1] en un tableau de int
+  int i;
+  int tab = malloc(argv.length*sizeof(int));
+  for(i = 0 ; i < tab.length ; i++)
+    tab[i] = atoi(argv[1][i]);
+
+  printf("Le minimum du tableau est %f et se trouve à l'indice %d", min(tab[1], tab[1].length), indice_min(tab, tab.length));
+
+  return 0;
+}

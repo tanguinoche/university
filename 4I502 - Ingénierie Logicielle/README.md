@@ -1,0 +1,4 @@
+#4I502 : Ingénierie Logicielle
+
+#Description de l'UE :
+L'UE est conçue pour que les étudiants puissent acquérir à la fois des connaissances concernant les processus de développement du logiciel, la modélisation et l'architecture des systèmes à dominante logicielle en UML, les patrons de conception, l'analyse et la conception orientées objet, les techniques de tests et de validation des logiciels, la métrologie du logiciel et de son processus de développement, les componentiels, la mise en oeuvre d'un environnement industriel de développement de logiciel ou la rédaction de la documentation technique d'un logiciel. L'UE donne un aperçu des concepts, formalismes, méthodes et outils de spécification, de conception, de vérification et de réalisation de systèmes informatiques complexes aussi bien développés dans un contexte industriel qu'un contexte recherche.

@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/brush_line.png</file>
+        <file>img/color_picker.png</file>
+        <file>img/Images.qrc</file>
+        <file>img/new.png</file>
+        <file>img/open.png</file>
+        <file>img/other_brush.png</file>
+        <file>img/pen_line.png</file>
+        <file>img/save.png</file>
+    </qresource>
+</RCC>

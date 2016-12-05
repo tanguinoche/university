@@ -1,0 +1,1 @@
+prog([var(x,int),set(x,22),while(app(lt,[x,42]),[set(x,app(add,[x,1]))])])

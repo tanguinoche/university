@@ -1,0 +1,40 @@
+\documentclass[a4paper, titlepage]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}         % marges
+\usepackage{graphicx}         % images
+\usepackage{verbatim}         % texte préformaté
+\usepackage[x11names]{xcolor}   % Accès à une table de 317 couleurs
+
+
+\title{APS}      % renseigne le titre
+\author{ISHIWATA Tomohiro, RETAIL Tanguy.}           %   "   "   l'auteur
+\date{12 avril 2016}           %   "   "   la future date de parution
+
+\pagestyle{headings}          % affiche un rappel discret (en haut à gauche)
+                              % de la partie dans laquel on se situe
+                       
+
+       
+\begin{document}
+
+\maketitle
+\tableofcontents
+\section*{Version sans AST}
+\paragraph{Dans le dossier "$Version$", il suffit de lancer le makefile, puis d'éxécuter $aps\_launcher$ en précisant le nom du fichier à ouvrir en premier argument. Le résultat est affiché dans le flux de sortie standard.\newline Par exemple $./aps\_launcher$ $sample.aps >> res.pl$ prend en entrée le programme aps sample, et fournit en sortie un fichier prolog res.\newline
+Pour tester le typeur / évaluateur: \\
+lancer la commande swipl\\
+puis compiler le typeur / évaluateur\\
+$[typeur].$\\
+$is\_well\_typed(res.pl).$}
+
+\section*{Version AST (non fonctionnelle)}
+\paragraph{Dans le dossier "$VersionAST$" se trouvent les fichiers composant l'AST, les analyseurs lexicaux et syntaxiques. L'AST est écrit en C++ et nous avons un problème pour générer le prolog. En effet, un $ASTBlock$ contient un champ de classe "$list<ASTCmds>$ cmds" auquel nous ajoutons des objets héritant de $ASTStat$ et $ASTDec$ (eux même héritant de $ASTCmds$). Le problème est que lors de l'ajout dans une liste (Plus généralement un Container), le C++ ajoute par copie et nous perdons l'information sur le type réel de l'objet que nous ajoutons ; et sommes incapables d'appeler les méthodes de cet objet, mais seulement celles de $ASTCmds$.\newline
+N'étant pas experts en C++, nous n'avons pas trouvé le temps de régler ce problème, qui nous empèche de travailler avec des AST pour le moment.
+\newline
+Pour essayer, il est néanmoins possible de compiler avec le makefile, et de lancer avec le fichier $aps\_launcher$ en précisant le nom du fichier à ouvrir en premier argument.}
+\section*{Extension}
+\paragraph{Nous disposons d'une extension qui permet d'afficher les erreurs lexicales et syntaxiques dans certains cas, en spécifiant le numéro de ligne et le caractère.}
+
+
+\end{document}

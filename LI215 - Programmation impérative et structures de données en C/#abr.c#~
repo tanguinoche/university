@@ -1,0 +1,48 @@
+#include "abr.h"
+
+Un_noeud *CreerABR(int v, void *data) {
+  Un_noeud *res=malloc(sizeof(Un_noeud));
+  res->v;
+  res->data=data;
+  res->=res->d=NULL;
+  return res;
+}
+
+Un_noeud *ChercherABR(Un_noeud *abr, int v){
+    if(abr == NULL) return NULL;
+    if(v == abr->v) return abr->v;
+    
+    if(v > abr->v) ChercherABR(abr->r, v);
+    else ChercherABR(abr->g, v);
+
+}
+
+Un_noeud *AjouterABR(Un_noeud **abr, int v, void *data) {
+  if(*abr == NULL){ *abr=CreerABR(v,data); return *abr; }
+  if(v == *abr->v) return NULL;
+    
+  if(v > abr->v) AjouterABR(&(abr->r), v,data);
+  return AjouterABR(&(abr->g),v,data);
+}
+
+Un_noeud *ExtraireABR(Un_noeud *abr, Un_noeud *n) {
+  if (abr==n){ //c'est la racine
+    if(abr->g == abr->d) return NULL;
+    if(abr->g == NULL) return abr->d;
+    if(abr->d == NULL) return abr->g;
+    Un_noeud *d = gauchedroite(abr->d);
+    h->v=d->v;
+    n->data=d->data;
+    return abr;
+  }
+
+}
+
+Un_noeud *gauchedroite(Un_noeud *abr){
+  if(n->v < abr->v) {
+    abr->g = extraireABR(abr->g, n);
+    return abr;
+  }
+  abr->d=extraire(abr->d, n);
+  return abr;
+}

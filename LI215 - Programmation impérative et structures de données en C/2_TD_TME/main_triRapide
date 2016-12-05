@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include "utilitaires_tableaux.h"
+
+int main()
+{
+int taille = 20;	
+int *tab;
+tab = nouveau_tableau(taille);
+
+
+detruire_tableau(tab);
+}

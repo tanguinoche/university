@@ -1,0 +1,13 @@
+Pour compiler, se placer dans le dossier Projet puis:
+bison -d tme1essai2.y
+flex tme1essai2.l
+gcc y.tab.c lex.yy.c -ll
+./a.out exemple/sample.txt
+
+
+
+                                
+//COMPILATION C++
+bison -d tme1essai2.y 
+flex tme1essai2.l 
+g++ -std=c++11 tme1essai2.tab.c lex.yy.c -ll -o tme1essai2

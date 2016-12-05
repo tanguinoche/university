@@ -1,0 +1,252 @@
+
+<!-- saved from url=(0041)http://www.gillesbailly.fr/qt/TP-Qt1.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Travaux Pratiques Qt #1</title>
+<meta http-equiv="content-type" content="text/html" ;="" charset="utf-8"> 
+
+<style>
+body {
+  font-family: arial, helvetica, sans-serif; 
+  font-size: 10pt;
+}
+
+a:link    {color:steelblue;}
+a:visited {color:slategrey;}
+a:hover   {background-color:yellow;}
+
+em {
+  font-style: normal;
+  color: #ee5e19;  /* orange */
+}
+
+li {
+  margin-bottom: 5px;
+  padding-bottom: 0px;
+}
+
+h1 {
+  font-size: 20pt;
+  color: navy;
+  margin-top:15px;
+  margin-bottom:2px;
+}
+
+h2 {
+  font-size: 16pt;
+  color: #ee5e19;
+  margin-bottom:0px;
+  padding-bottom: 0px;
+}
+
+h3 {
+  font-size: 14pt;
+  margin-top: 30px;
+  margin-bottom:  0px;
+  padding-bottom: 0px;
+  color: navy;
+}
+
+</style>
+<script async="" src="./Travaux Pratiques Qt #1_files/analytics.js"></script><script type="text/javascript" async="" src="./Travaux Pratiques Qt #1_files/"></script><style type="text/css"></style></head>
+
+<body>Le TP s'appuie sur celui d'Eric Lecolinet
+
+<h2> Sujet </h2>
+
+<p>
+Note préliminaire : il est préférable de lire chaque "étape" en entier 
+(en particulier les notes ou remarques) avant de la traiter.
+</p>
+
+<h3>1e Etape: Démarrage</h3>
+<p>
+Lancer l'IDE <em><b>QtCreator</b></em> (via le menu Programmation ou en tapant
+<tt>qtcreator &amp;</tt> dans le Terminal), puis sélectionner :
+</p><ul>
+  <li> <em>File</em> </li>
+  <li> <em>New File or Project... </em> </li>
+  <li> <em>Application (dans Project) / Qt Gui Application</em> </li>
+  <li> entrer un <em>nom de projet</em>, un répertoire du même nom sera créé
+    (vous pouvez aussi préciser dans quel répértoire il sera créé)
+  </li>
+  <li> cliquer <em>Next, OK, Finish...</em> sans se préoccuper des autres options
+  </li>
+</ul>
+
+<p>
+Cinq fichiers ont été créés par QtCreator :
+</p><ul>
+<li> nom_de_projet<em>.pro</em> : décrit le <b>projet Qt</b> (le nom sera
+  celui que vous avez indiqué). Sera éventuellement modifié par QtCreator.
+</li>
+<li> <em>main.cpp</em> : crée une instance de <b>QApplication</b> et de <b>MainWindow</b>
+</li>
+<li> <em>mainwindow.h</em> : le header déclarant la classe <b>MainWindow</b>
+</li>
+<li> <em>mainwindow.cpp</em> : le fichier source implémentant la classe <b>MainWindow</b>
+</li>
+<li> <em>mainwindow.ui</em> : le fichier XML produit par <b>QtDesigner</b>
+  (On ne s'en servira pas dans ce TP, ce sera l'objet d'une autre séance).
+</li>
+</ul>
+
+Regardez le contenu de ces fichiers. Les seuls que nous aurons besoin
+de modifier aujourd'hui sont ceux de la classe <em>MainWindow</em>, c'est-à-dire
+<b>mainwindow.h</b> et <b>mainwindow.cpp</b>. 
+Le fichier <b>main.cpp</b> est standard et n'a généralement pas besoin d'être
+modifié.
+D'autres fichiers seront ensuite crées par QtCreator (l'exécutable, les .o,
+des fichiers moc_*, etc.) soit dans ce reépartoire, soit dans un répertoire
+caché suivant la version de <em>QtCreator</em>.
+<p></p>
+
+
+
+<h3>2e Etape: rajouter des widgets à MainWindow</h3>
+<p>
+La classe <em>MainWindow</em> dérive de <em>QMainWindow</em>. Elle va vous 
+permettre d'implémenter les fonctionnalités nécessaires pour faire ce TP.
+Pour l'instant elle ne fait pas grand chose de plus que QMainWindow. 
+Pour voir ce que ca donne, compiler et exécuter en cliquant sur la 
+<em>flèche verte</em> en bas à gauche de QtCreator. Remarquer la barre
+<em>Compilation</em> un peu plus haut. Celle-ci est grise en cours de
+compilation, verte si la compilation a réussi et rouge sinon. En cliquant
+sur cette barre on fait apparaitre (ou disparaitre) les erreurs.
+</p>
+<p>
+En s'inspirant du cours créer une barre de menu avec un menu
+déroulant "Fichier" contenant des items pour activer les commandes
+"Open...", "Save..." et "Quit...". Créer également une barre d'outils 
+permettant d'activer les mêmes commandes. Utiliser les <em>QAction</em> 
+en spécifiant les accélérateurs clavier et bulles d'aides appropriés
+(on supposera que l'on dispose de 3 fichiers .png contenant les images des
+icones de ces commandes). Implémenter que quelques actions pour pouvoir avancer rapidement dans le TP.
+Finalement, faire en sorte que la zone centrale de la MainWindow soit un 
+<em>QTextEdit</em> (penser à inclure le header approprié). Compiler et exécuter. 
+</p>
+
+
+<p>
+<b>Remarque : </b>
+<em>QtCreator</em> ajoute automatiquement la ligne <b>ui-&gt;setupUi(this);</b>
+dans le code du constructeur de <em>MainWindow</em>. Ceci sert à instancier
+l'interface graphique créée à l'aide de <em>QtDesigner</em>.
+Comme pour l'instant on ne s'en sert pas, il faut <b>commenter cette ligne</b>
+et créer une barre de status en appelant la méthode <em>statusBar()</em>
+de la classe <em>QtMainWindow</em>.
+</p>
+
+
+
+<h3>3e Etape: ajouter des ressources</h3>
+<p>
+Télecharger des fichiers .png contenant les images des icones dans
+un sous-répertoire de votre projet Qt (vous pouvez par exemple télécharger
+<a href="http://www.gillesbailly.fr/qt/icons.zip">ces fichiers d'icones</a>).
+Assurez-vous que les noms indiqués dans le code source correspondent à ceux des
+fichiers, puis faire :
+</p><ul>
+  <li> <em>New File or Project... </em> </li>
+  <li> <em>Qt (dans Files and Classes) / Qt Resource File</em> </li>
+</ul>
+Un fichier de ressources (extension <em>.qrc</em> est alors créé).
+Il faut alors ajouter interactivement un <em>Préfixe</em> (qui sera du type
+"/truc" ou truc est le répertoire contenant les fichiers des icones), puis
+chacun de ces <em>Fichiers</em>.
+Recompiler et vérifier que la barre de menu affiche bien les icones.
+<p></p>
+
+
+
+<h3>4e Etape: définir et connecter les slots</h3>
+<p>
+Déclarer et implémenter les slots <em>openFile</em>(), <em>saveFile</em>() 
+et <em>quitApp</em>().
+Pour l'instant ils se contenteront d'afficher un message (e.g. le nom du slot)
+sur la console (NB: si on utilise <em>cout</em> et <em>endl</em> ne pas oublier qu'ils sont 
+dans le namespace <em>std</em> et qu'il faut inclure le header <em>iostream</em>).
+Connecter les slots aux actions correspondantes. Compiler et tester.
+</p>
+
+
+
+
+<h3>5e Etape: ouvrir une boîte de dialogue pour sélectionner un fichier</h3>
+<p>
+On va maintenant faire en sorte que les slots <em>openFile</em>() 
+et <em>saveFile</em>() ouvrent des boîtes de dialogue permettant de récupérer
+un nom de fichier. C'est le rôle du widget <em>QFileDialog</em>, qui peut
+être utilisé de plusieurs manières. En s'inspirant du cours, choisir la technique
+la plus simple, tant pour ouvrir un "Open" qu'un "Save" Dialog.
+Recupérer le nom du fichier sélectionné et l'afficher sur la console.
+</p>
+<p>
+Remarques:
+</p><ul>
+<li> 
+On ne peut pas afficher directement une <em>QString</em> (renvoyée par
+la boîte de dialogue) sur <em>cout</em>, pourquoi ? 
+Le plus simple est d'utiliser la macro <em>qPrintable(QString)</em>.
+</li><li>
+Noter que la technique employée pour récupérer le nom de fichier est 
+<b>"modale"</b> : tant que la boîte de dialogue est ouverte, l'utilisateur 
+peut uniquement interagir avec elle. 
+Ceci-vise d'une part à focaliser son attention sur la boîte de dialogue, 
+et d'autre part à simplifier la programmation. Pourquoi la programmation
+serait plus complexe si le dialogue n'était pas modal ?
+</li></ul>
+
+
+
+
+<h3>6e Etape: ouvrir / sauver une page HTML</h3>
+<p>
+On va maintenant rajouter le code nécessaire dans le slot <em>openFile</em>() 
+pour lire le fichier (texte ou HTML) sélectionné via la boîte de dialogue
+et faire apparaître son contenu dans le <em>QTextEdit</em>.
+Pour ce faire, on utilisera un <em>QFile</em> et un <em>QTextStream</em> pour
+lire le fichier. Pour simplifier tout le contenu du fichier sera lu en une seule 
+fois dans le QTextStream. Ce contenu sera alors affecté au <em>QTextEdit</em>
+via sa méthode <em>setHtml</em>(). Cette méthode suppose que le contenu est du HTML
+(pour du texte brut on utiliserait plutot setPlainText()). Un simple fichier html (Hello World.html) est disponible dans le répertoire. 
+</p>
+<p>
+Inversement, en suivant la même logique, faire en sorte que le slot <em>saveFile</em>() 
+sauvegarde le contenu du <em>QTextEdit</em> dans le fichier indiqué par la
+boîte de dialogue. Remarque: on pourra utiliser l'opérateur <em>&lt;&lt;</em> 
+du <em>QFile</em>.
+</p>
+
+
+
+
+<h3>7e Etape: ouvrir une boîte de dialogue pour demander confirmation</h3>
+<p>
+Faire en sorte qu'appuyer sur le bouton <em>Quit</em> ait pour effet d'ouvrir 
+un <em>QMessageBox</em> comportant des boutons "Yes" et "No" 
+permettant de demander confirmation avant de sortir de l'application.
+</p>
+
+
+
+<h3>8e Etape: demander confirmation dans tous les cas</h3>
+<p>
+L'étape précédente comporte une faille. En effet, l'utilisateur peut aussi
+quitter le programme en cliquant sur le bouton présent sur la
+barre de la fenêtre (généralement une croix, ou un bouton rouge).
+Modifier la <em>MainWindow</em> de telle sorte que cette action ait le même effet 
+que lorsqu'on clique sur le bouton <em>Quit</em>, c'est-à-dire ouvrir une boîte
+de dialogue pour demander confirmation.
+(Indication : il faudra redéfinir <em>QWidget::closeEvent</em>()).
+</p>
+
+
+
+<br>
+
+[an error occurred while processing this directive]
+
+
+
+
+</body></html>

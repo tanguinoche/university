@@ -1,0 +1,590 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "geom.h"
+
+#define BSIZE 256
+
+/*******************************************************************/
+/*                       Les Points                                */
+/*******************************************************************/
+
+void DetPoint(void *pv)
+{
+  Un_point *p = pv;
+  
+  if(p == NULL) {
+    puts("Destruction du point impossible, celui-ci n\'existe pas. (DetPoint)\n");
+    return;
+  }
+  DetruireListe(p->lf, NULL);
+  free(p);
+}
+/***************************************************/
+Un_point *CreerPoint(unsigned int id, int x, int y)
+{
+  Un_point *p = malloc(sizeof(Un_point));
+
+  if(!p) {
+    fprintf(stderr,"Erreur allocation. (CreerPoint)\n");
+    return NULL;
+  }
+
+  p->x = x;
+  p->y = y;
+  p->id = id;
+  p->lf = NULL;
+
+  return p;
+}	
+/***************************************************/
+Un_noeud *AjouterPoint(Un_noeud *abr, Un_point *p){
+  if(AjouterABR(&abr,p->id,p)==NULL){
+    printf("Point %d deja present \n",p->id);
+    return NULL;
+  }
+  return abr;
+}
+/***************************************************/
+int VMax(Un_noeud *n)
+{
+
+if(n == NULL) return 0;
+  while(n->d) //Tant qu'il y a un fils droit
+    {
+      n = n->d;
+    }
+  return n->v;
+}
+/*******************************************************************/
+/* Les Formes                                                      */
+/*******************************************************************/
+
+Une_forme *CreerForme(Un_type t, Une_couleur c, int nb_points)
+{
+  Une_forme *f = malloc(sizeof(Une_forme));
+  if(f == NULL) {
+    fprintf(stderr, "Probleme lors de la création d\'une forme : allocation memoire. (CreerForme)\n");
+    exit(1);
+  }
+
+f->type = t;
+f->coul = c;
+f->tabp = malloc(sizeof(Un_point*)*nb_points);
+ if(f->tabp == NULL) {
+    fprintf(stderr, "Probleme lors de la création d\'une forme : allocation memoire du pointeur sur les tableaux de points. (CreerForme)\n");
+    exit(1);
+ }
+f->etat = VIDE;
+return f;
+}
+/***************************************************/
+int NbPForme(Une_forme *f)
+{
+  if(f == NULL) {
+    puts("Forme inexistante. (NbForme)\n");
+    return 0;
+  }
+  if(f->type == SEG)
+    return 2;
+  if(f->type == COURB)
+    return 4;
+  
+  puts("Forme inconnue. (NbForme)\n");
+  return 0;
+}
+
+/***************************************************/
+Un_elem *CreerElem(Une_forme *f)
+{
+  if(!f) { 
+    puts("Forme inexistante. (CreerElem)\n");
+    return NULL;
+  }
+  
+  Un_elem *el = malloc(sizeof(Un_elem));
+  if(!el) {
+    fprintf(stderr, "Erreur allocation. (CreerElem)\n");
+    exit(1);
+  }
+  
+  el->forme = f;
+  el->suiv = NULL;
+  return el;
+}
+/***************************************************/
+void DetruireListe(Un_elem *liste, void (*detforme)(Une_forme *f))
+{
+  if(!liste) return; //Impossible de détruire une liste inexistante
+
+  Un_elem *suiv = liste->suiv;
+  while(liste)
+    {
+      suiv = liste->suiv;
+      if(detforme != NULL) detforme(liste->forme);
+      free(liste);
+      liste = suiv;
+    }
+}
+/***************************************************/
+Un_elem *AjouterForme(Un_elem *l, Une_forme *f)
+{
+  if(f == NULL) return NULL;
+  Un_elem *ne = malloc(sizeof(Un_elem));
+  if(ne == NULL) {
+    fprintf(stderr, "Probleme d\'allocation memoire. (AjouterForme)\n");
+   exit(1);
+  }
+  ne->forme = f;
+  ne->suiv = l;
+  return ne;
+}
+/***************************************************/
+Un_elem *ExtraireForme(Un_elem *l, Une_forme *f)
+{
+  //Cas 1 : La liste n'existe pas.
+  if(l == NULL) {
+    puts("Liste inexistante. (ExtraireForme)\n");
+    return NULL;
+  }
+
+  Un_elem *nl = l;
+  Un_elem *nlcur = l;
+  
+  while((nl->suiv) && (nl->forme != f)) {
+    nlcur = nl;
+    nl = nl->suiv;
+  }
+
+  //Cas 2 : La forme a été trouvée, extraction de la forme.
+  if(nl->forme == f) 
+    { 
+      nlcur->suiv = nl->suiv; 
+      free(nl); 
+      return l; 
+    }
+
+  //Cas 3 : La forme n'a pas été trouvé, rien à extraire.
+  puts("Forme a extraire non trouvee. (ExtraireForme)\n"); 
+  return NULL;
+}
+
+/*******************************************************************/
+/* Construction Destruction Modification Dessin                    */
+/*******************************************************************/
+
+Un_dessin *CreerDessin(char *path)
+{
+  Un_dessin *d = calloc(sizeof(Un_dessin), 1);
+  if(d == NULL) {
+    fprintf(stderr, "Erreur allocation. (CreerDessin)\n");
+    exit(1);
+  }
+  
+  d->path = strdup(path);
+
+  return d;
+}
+/***************************************************/
+void minmax(Un_noeud *n, void *arg)
+{
+  if(n == NULL) return;
+  
+  int *tab = (int*)arg;
+  Un_point *pg, *pd;
+  
+  if(n->g != NULL) { 
+    pg = (Un_point*)(n->g->data);
+    
+    if(pg->x <= tab[0])
+      tab[0] = pg->x;
+    else if(pg->x >= tab[1])
+      tab[1] = pg->x; 
+    
+    if(pg->y <= tab[2])
+      tab[2] = pg->y;
+    else if(pg->y >= tab[3])
+      tab[3] = pg->y;
+  }
+  
+  
+  if(n->d != NULL) { 
+    pd = (Un_point*)(n->d->data);
+    
+    if(pd->x <= tab[0])
+      tab[0] = pd->x;
+    else if(pd->x >= tab[1])
+      tab[1] = pd->x;
+    
+    if(pd->y <= tab[2])
+      tab[2] = pd->y;
+    else if(pd->y >= tab[3])
+      tab[3] = pd->y;
+  }     
+}
+/***************************************************/
+void LimitesDessin(Un_dessin *d, int *xmin, int *xmax, int *ymin, int *ymax)
+{
+  if(!d) { 
+    puts("Dessin inexistant. (LimitesDessin)\n");
+    return;
+  }
+  
+  int tab[4];
+  Un_point *p = (Un_point*)(d->points->data);
+  tab[0] = p->x;
+  tab[1] = p->x;
+  tab[2] = p->y;
+  tab[3] = p->y;
+
+  ItererABR(d->points, minmax, tab);
+  xmin[0] = tab[0];
+  xmax[0] = tab[1];
+  ymin[0] = tab[2];
+  ymax[0] = tab[3];
+}
+/***************************************************/
+void DetruireForme (Une_forme *f)
+{
+  if(f) {
+    free(f->tabp);
+    free(f);
+  }
+}
+/***************************************************/
+void DetruireDessin(Un_dessin *d)
+{
+  if(!d) {
+    puts("Dessin inexistant. (DetruireDessin)\n");
+    return;
+  }
+  // destruction ABR des points
+  DetruireABR(d->points, DetPoint);
+  // destruction ABRX des points
+  DetruireABRX(d->abrx);
+  // destruction des formes
+  DetruireListe(d->formes, DetruireForme);
+  // liberation de path
+  free(d->path);
+  // liberation de la structure
+  free(d);
+}
+
+/*******************************************************************/
+/* Lecture Ecriture Dessin                                         */
+/*******************************************************************/
+
+
+void EcritPoint(Un_noeud *n, void *fic){
+  if(n==NULL){
+    printf("arbre vide dans EcritPoint\n");
+    return;
+  }
+  FILE *f=(FILE *)fic;
+  if(f==NULL){
+    printf("f vide dans EcritPoint\n");
+    return;
+  }
+  
+  Un_point* p=(Un_point*)(n->data);
+  fprintf(f,"P %u %d %d\n",p->id,p->x,p->y);
+}
+/***************************************************/
+int EnregDessin(Un_dessin *d, char *nomf){
+  FILE *f=fopen(nomf,"w");
+  if(f==NULL){
+    printf("Erreur ouverture fichier dans EnregDessin\n");
+    return 0;
+  }
+  
+  fprintf(f,"# Les Points\n");
+  
+  ItererABR(d->points,EcritPoint,f);
+  
+  fprintf(f,"# Les Formes\n");
+  
+  
+  Un_elem *l=d->formes;
+  Un_type t;
+  unsigned char r,v,b;
+  unsigned int idp1,idp2,idp3,idp4;
+  Une_forme *forme;
+  
+  
+  
+  while(l!=NULL){
+    forme=l->forme;
+    t=forme->type;
+    r=forme->coul.r;
+    v=forme->coul.v;
+    b=forme->coul.b;
+    
+    idp1=forme->tabp[0]->id;
+    idp2=forme->tabp[1]->id;
+    
+    if(t==SEG){
+      fprintf(f,"S %hhu %hhu %hhu %u %u\n",r,v,b,idp1,idp2);
+      
+    }
+    if(t==COURB){
+      idp1=forme->tabp[0]->id;
+      idp2=forme->tabp[1]->id;
+      idp3=forme->tabp[2]->id;
+      idp4=forme->tabp[3]->id;
+      fprintf(f,"C %hhu %hhu %hhu %u %u %u %u\n",r,v,b,idp1,idp2,idp3,idp4);
+      
+      }
+    
+    l=l->suiv;
+  
+  }
+  fclose(f);
+  
+  return 1;
+
+}
+/***************************************************/
+int LirePoint(Un_dessin *d, char *s){
+  if((d==NULL) || (s==NULL)) return 0;
+  
+  int x,y;
+  unsigned int id;
+
+  Un_point *p=(Un_point*)malloc(sizeof(Un_point));
+  
+  if(p==NULL){
+    printf("Erreur d'alocation de p dans LirePoint\n");
+    return 0;
+  }
+  
+  if(sscanf(s,"P %u %d %d",&id,&x,&y)!=3){
+    printf("Erreur format LirePoint\n");
+    return 0;
+  }
+  if(VMax(d->points)>id){
+   
+    return 0;
+  }
+  p=CreerPoint(id,x,y);
+  
+  d->points=AjouterPoint(d->points,p);
+  return 1;
+}
+/***************************************************/
+int LireForme(Un_dessin *d, char *s){
+  if((d==NULL) || (s==NULL)){
+    printf("d ou s nulle dans LireForme\n");
+    return 0;
+  }
+  Un_noeud *n1,*n2,*n3,*n4;
+  int res;
+  Une_couleur c;
+  Une_forme *f;
+  unsigned int idp1,idp2,idp3,idp4;
+  
+  if(s[0]=='S'){
+    res=sscanf(s,"S %hhu %hhu %hhu %u %u",&(c.r),&(c.v),&(c.b),&idp1,&idp2);
+    if(res != 5){
+      printf("Erreur format lecture S LireForme \n");
+      return 0;
+    }
+    
+    if(res==5){
+     
+      n1=ChercherABR(d->points,idp1);
+      n2=ChercherABR(d->points,idp2);
+     
+      
+      f=CreerForme(SEG,c,2);
+      
+      f->type=SEG;
+      
+      f->tabp[0]=(Un_point*)(n1->data);
+      f->tabp[1]=(Un_point*)(n2->data);
+    
+      f->tabp[0]->lf=AjouterForme(f->tabp[0]->lf,f);
+      f->tabp[1]->lf=AjouterForme(f->tabp[1]->lf,f);
+     
+      d->formes=AjouterForme(d->formes,f);
+     
+    
+
+    }   
+  }
+  
+  if(s[0]=='C'){
+    res=sscanf(s,"C %hhu %hhu %hhu %u %u %u %u",&(c.r),&(c.v),&(c.b),&idp1,&idp2,&idp3,&idp4);
+    if(res==7){
+      if(res != 7){
+	printf("Erreur format lecture C LireForme \n");
+	return 0;
+      } 
+      
+      n1=ChercherABR(d->points,idp1);
+      n2=ChercherABR(d->points,idp2);
+      n3=ChercherABR(d->points,idp3);
+      n4=ChercherABR(d->points,idp4);
+   
+      
+      f=CreerForme(COURB,c,4);
+      
+      f->type=COURB;
+      
+      f->tabp[0]=(Un_point*)(n1->data);
+      f->tabp[1]=(Un_point*)(n2->data);
+      f->tabp[2]=(Un_point*)(n3->data);
+      f->tabp[3]=(Un_point*)(n4->data);
+
+      f->tabp[0]->lf=AjouterForme(f->tabp[0]->lf,f);
+      f->tabp[1]->lf=AjouterForme(f->tabp[1]->lf,f);
+      f->tabp[2]->lf=AjouterForme(f->tabp[2]->lf,f);
+      f->tabp[3]->lf=AjouterForme(f->tabp[3]->lf,f);
+     
+      d->formes=AjouterForme(d->formes,f);
+    }
+  }
+    return 1;
+}
+/***************************************************/
+Un_dessin *OuvrirDessin(char *nomf){
+  
+  if(nomf == NULL){
+    printf("Nom fichier non valid\n");
+    return NULL;
+  }
+
+  Un_dessin *d=CreerDessin(nomf);
+  FILE *f=fopen(nomf,"r");
+  if(f==NULL){
+    printf("Erreure ouverture fichier dans OuvrirDessin\n");
+    return NULL;
+  }
+  char s[BSIZE];
+
+  do{ fgets(s,BSIZE,f);
+  }while(s[0]=='#');
+  while(s[0]=='P'){
+    if(LirePoint(d,s) == 0){
+      printf("Erreur lecture points\n");
+      return NULL;
+    }
+    fgets(s, BSIZE, f);
+  }
+  
+  while(s[0]=='#'){
+    fgets(s,BSIZE,f);
+  }
+  
+  do{
+    if(LireForme(d,s)==0){
+	printf("Erreur lecture forme\n");
+	return NULL;
+      }
+      d->formes->forme->etat=OK;  
+  }
+  while(fgets(s,BSIZE,f)!=NULL);
+ 
+  fclose(f);
+
+  return d;
+}
+/*******************************************************************/
+/* ABRX                                                            */
+/*******************************************************************/
+
+Un_noeud *AjouterPointABRX(Un_noeud *abrx, Un_point *p)
+{
+  if(p == NULL) {
+    puts("Point incorrect. (AjouterPointABRX)\n");
+    return NULL;
+  }
+  
+  Un_noeud *x, *y, *abry;
+  Un_point *py;
+  
+  if(abrx == NULL) {
+    abrx = AjouterABR(&abrx, p->x, NULL);
+    py = CreerPoint(p->y, p->x, p->y);
+    abry = (Un_noeud *)(abrx->data);
+    abry = AjouterABR(&abry, p->y, py); 
+    abrx = AjouterABR(&abrx, p->x, abry);
+    return abrx;
+  }
+  
+  x = ChercherABR(abrx, p->x);
+  if(x == NULL) {
+    py = CreerPoint(p->y, p->x, p->y);
+    abry = (Un_noeud *)(abrx->data);
+    abry = AjouterABR(&abry, p->y, py); 
+    abrx = AjouterABR(&abrx, p->x, abry);
+    return abrx;
+  }
+  
+  y = ChercherABR(abry, p->y);
+  if(y == NULL){
+    py = CreerPoint(p->y, p->x, p->y);
+    abry = (Un_noeud *)(abrx->data);
+    abry = AjouterABR(&abry, p->y, py); 
+    abrx = AjouterABR(&abrx, p->x, abry);
+    return abrx;
+  }
+
+  return NULL; //Problème
+}    
+/***************************************************/
+
+void CABRX(Un_noeud *n, void *abrxv)
+{ 
+  Un_noeud *abrxi = (Un_noeud *)abrxv;
+  if(n == NULL) {
+    puts("Noeud incorrect. (CABRX)\n");
+    return;
+  }
+  AjouterPointABRX(abrxi, n->data);
+}
+/***************************************************/
+
+void ConstruireABRX(Un_dessin *d)
+{
+  if(d == NULL) {
+    puts("Dessin incorrect. (ConstruireABRX)\n");
+  }
+  ItererABR(d->points, CABRX, d->abrx);  
+}
+/***************************************************/
+
+Un_point *ChercherPointABRX(Un_dessin *d, int x, int y)
+{
+  if(d == NULL){
+    puts("Dessin incorrect. (ChercherPointABRX)\n");
+    return NULL;
+  }
+  
+  Un_noeud *abrx, *abry;
+  Un_point *p;
+  
+  abrx = d->abrx;;
+  if(abrx == NULL)
+    return NULL;
+
+  abrx = ChercherABR(abrx, x);     
+  abry = (Un_noeud *)(abrx->data); 
+  abry = ChercherABR(abry, y);  
+  
+  if(abry == NULL)
+    return NULL;
+    
+  p = (Un_point *)(abry->data); 
+  return p;
+}
+/***************************************************/
+void DetruireABRY(void *abryv)
+{
+  Un_noeud *abry = (Un_noeud *)(abryv); 
+  DetruireABR(abry, DetPoint);
+}
+/***************************************************/
+void DetruireABRX(Un_noeud *abrx)
+{
+  DetruireABR(abrx, DetruireABRY); 
+}

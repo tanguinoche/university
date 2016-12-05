@@ -1,0 +1,197 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[x11names]{xcolor}   % Accès à une table de 317 couleurs
+\usepackage{graphicx} %Pour utiliser la colorbox et les images
+\usepackage{textcomp}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[ruled]{algorithm2e}
+
+\title{\textbf{CPA \\ algorithme de Erno Welzl pour le cercle minimum.}}
+\author{RETAIL Tanguy}
+\date{25/02/2016}
+\begin{document}
+
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+Etant donné un ensemble de points dans le plan carétsien, nous cherchons le cercle minimum qui contienne tous ces points, ce cercle est unique. Ce problème fût proposé par TODO en TODO. 
+De nombreuses solutionsfurent proposées pour calculer le cercle minimum, dans un temps généralement O($n^2$), on peut citer Elzinga and Hearn en 1972, Shamos and Hoey en 1975, et finalement Preparata en 1977. Shamos découvrit en 1978 le premier algorithme en O(n logn).
+Nimrod Megiddo en 1983 proposa un premier algo linéaire, assez fastidieux. Il faut attendre 1991 pour l'algorithme de Welzl qui calcule le cercle minimum d'une manière simple à partir d'un nuage de points dans un temps théorique quadratique, mais linéaire expérimentalement.
+
+\subsection{Définition cercle minimum}
+Le cercle minimum est défini pour un ensemble d'au moins deux points. En effet le cercle minimum pour un point, est ce point lui-même. Le cercle minimum est donc caractérisé par soit deux points sur le cercle, diamétralement opposés, soit par un cercle circonscrit (passant par au moins trois points, cocirculaires).
+
+\subsubsection{Unicité du cercle minimum}
+Soient deux cercle $C_1$ et $C_2$ deux cercles minimaux différents du même ensemble de points S. Alors leur intersection $I \subseteq C_1 \cap C_2$ contient S. Le cercle passant par les intersections $i_1$ et $i_2$ des deux cercles et de centre $(\dfrac{i_{1x} + i_{2x}}{2},\dfrac{i_{1y} + i_{2y}}{2})$ a un rayon nécessairement plus petit. C'est une contradiction, le cercle minimum est unique.
+\subsubsection{Caractérisation du cercle minimum}
+Selon Welzl [1] :
+Soit P un ensemble de n points, P non vide et p est un point dans P. R est également un ensemble de points, qui sont en fait les points sur le cercle. Le lemme dit : \\
+(i) Si il existe un cercle contenant P avec R sur ce cercle, alors D(P,R) est unique.\\
+(ii) Si p n'appartient pas à D(P - {p},R), alors p est sur le cercle D(P,R) = D(P - {p}, R u {p}).\\
+(iii) Si D(P,R) existe, il existe un ensemble S d'au plus {0, 3 - $\|$R$\|$} points dans P tel que D(P,R) = D(S,R). Ce qui implique que P est caractérisé par au plus 3 points dans P qui sont sur le cercle D(P).
+\subsection{Algorithme naïf}
+Cet algorithme, supposé exact, nous servira de référence afin de valider nos résultats avec l'agorithme de Welzl lors des expérimentations.\\
+Le principe est le suivant :\\
+Nous testons toutes les paires de point dans l'ensemble, espérant trouver un cercle qui contienne tous les points. Si ce cercle existe, alors il est minimal. Tester chaque paire est quadratique, tester l'appartenance de l'ensemble est linéaire. Le cercle est alors trouvé en $\mathcal{O}(n^3)$.\\
+Si aucun cercle n'est trouvé, alors celui-ci possède au moins trois points. Il faut tester chaque trio ($\mathcal{O}(n^3)$), calculer le cercle circonscrit à ce trio ($\mathcal{O}(1)$), puis vérifier que l'ensemble est contenu ($\mathcal{O}(n)$). L'algorithme est donc dans le pire cas en $\mathcal{O}(n^3) + \mathcal{O}(n^4) = \mathcal{O}(n^4)$.\\
+
+\subsection{Pseudo-code}
+\begin{algorithm}[H]
+ \KwData{Collection$<$point$>$ points}
+ \KwResult{Circle}
+ \ForEach{$Point$ $p$ \textbf{in} $points$}{
+     \ForEach{$Point$ $q$ \textbf{in} $points$}{
+        $Point$ $t \leftarrow middleOf(p,q)$\;
+        $Circle$ $c \leftarrow$ Circle of center t and radius [t,p]\;
+        \If{c contains points}{
+            \Return c;
+        }
+     }
+ }
+ \ForEach{$Point$ $p$ \textbf{in} $points$}{
+     \ForEach{$Point$ $q$ \textbf{in} $points$}{
+        \ForEach{$Point$ $r$ \textbf{in} $points$}{
+            Circle c $\leftarrow$ cercleCirconscrit(p, q, r)\;
+            \If{c contains points}{
+                \If{c is smaller than cMin \textbf{or} cMin is undefined} {
+                    Circle cMin $\leftarrow$ c\;
+                }
+            }
+        }
+     }
+ }
+ \Return cMin\;
+ \caption{MinimumSpanningCircle(Collection$<$point$>$ points) \textbf{[$\mathcal{O}(N^4)$]}}
+\end{algorithm}
+\subsection{Algorithme de Welzl}
+Le principe de Welzl est le suivant :\\
+1. Nous enlevons à chaque appel récursif un point p de l'ensemble jusqu'à :\\
+ - soit ne plus en avoir de points dans P, si R vaut 0, 1 nous créons alors un cercle vide et si R vaut 2 un cercle minimal passant par les deux points de R.\\
+ - soit R vaut 3 dans lequel cas nous créons un cercle circonscrit à ces trois points.\\
+2. Lors de chaque remontée, nous testons si le cercle contient le point p.\\
+ - Si oui, on continue de remonter.\\
+ - Si non, le point p est sur le cercle et on recommence (1) en ajoutant p à R.\\
+ \\
+ Moins formellement, nous parcourons la liste des points en agrandissant le cercle lorsqu'un point n'est pas dedans.\\
+ \\
+ \\
+ Dans ce premier exemple le point p à retirer est choisi successivement à la première place. Si la structure est triée par ordre d'éloignement du centre du nuage, nous risquons de faire un grand nombre d'itérations dans la récursion. Une solution apparente est donc de tirer un point aléatoirement dans la structure, afin d'optimiser le temps de résolution.\\
+\subsection{Pseudo-code}
+
+\begin{algorithm}[H]
+ \KwData{Collection$<$point$>$ points}
+ \KwResult{Circle}
+ \If{points is empty or singleton}{
+       \Return\; //No circle can be compute
+ }
+ choose the first point p in points\;
+ remove p from points\;
+ Circle c $\leftarrow$ minidisk(points)\;
+  \If{c does not contain p}{
+       Collection$<$Point$>$ boundary $\leftarrow \{p\}$\;
+       Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\; 
+ }
+ \Return c\;
+ \caption{minidisk(Collection$<$point$>$ points) \textbf{[$\mathcal{O}(N^2)$]}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+ \KwData{Collection$<$point$>$ points}
+ \KwResult{Circle}
+ \If{points is empty \textbf{or} boundary is size 3}{
+       \Return computeCircle{boundary}\;
+ }
+ choose the first point p in points\;
+ remove p from points\;
+ Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\;
+  \If{c does not contain p}{
+       boundary $\leftarrow \{p\}$\;
+       Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\; 
+ }
+ \Return c\;
+ \caption{b$\_$minidisk(Collection$<$point$>$ points,Collection$<$point$>$ boundary) \textbf{[$\mathcal{O}(N^2)$]}}
+\end{algorithm}
+
+
+\subsection{Algorithme de Welzl avec permutation}
+Afin de tirer aléatoirement un point p à chaque étape, trois solutions s'offrent à nous :\\
+- effectuer une permutation sur la liste avant de lancer l'algorithme.
+- tirer à chaque étape un point d'indice aléatoire
+- utiliser une structure qui ne garantisse pas l'ordre des points
+\subsection{Pseudo-code}
+\begin{algorithm}[H]
+ \KwData{Collection$<$point$>$ points}
+ \KwResult{Circle}
+ \If{points is empty or singleton}{
+       \Return\; //No circle can be compute
+ }
+ choose a random point p in points\;
+ remove p from points\;
+ Circle c $\leftarrow$ minidisk(points)\;
+  \If{c does not contain p}{
+       Collection$<$Point$>$ boundary $\leftarrow \{p\}$\;
+       Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\; 
+ }
+ \Return c\;
+ \caption{minidisk(Collection$<$point$>$ points) \textbf{[$\mathcal{O}(N)$]}}
+\end{algorithm}
+
+\begin{algorithm}[H]
+ \KwData{Collection$<$point$>$ points}
+ \KwResult{Circle}
+ \If{points is empty \textbf{or} boundary is size 3}{
+       \Return computeCircle{boundary}\;
+ }
+ choose a random point p in points\;
+ remove p from points\;
+ Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\;
+  \If{c does not contain p}{
+       boundary $\leftarrow \{p\}$\;
+       Circle c $\leftarrow$ b$\_$minidisk(points, boundary)\; 
+ }
+ \Return c\;
+ \caption{b$\_$minidisk(Collection$<$point$>$ points,Collection$<$point$>$ boundary) \textbf{[$\mathcal{O}(N)$]}}
+\end{algorithm}
+\section{Implémentation Java}
+\subsection{Choix de la structure de données}
+\textbf{LinkedList :}\\
+Une LinkedList en java est une collection d'objets chaînés. Lorsqu'on souhaite accéder à l'ième élément, il faut alors parcourir toute la liste depuis le début. Ainsi, c'est un très mauvais candidat pour effecteur des permutations, ou pour retirer un ième élément.\\
+\textbf{ArrayList :}\\
+Une ArrayList en java est un tableau dynamique. La structure en mémoire est donc contigüe, et l'accès à un élément constant. C'est donc un choix intéressant pour les permutations. Attention toute fois si le nombre d'objets à stocker est trop imposant, il faut réussir à trouver de la place en mémoire. Pour éviter les agrandissements trop fréquents lors d'une série d'insertion d'objets, il faut penser si possible à préciser la taille de l'ArrayList dans le constructeur.\\
+\textbf{Hashset :}\\
+Un HashSet en java est un ensemble d'objets non ordonnés, ne pouvant être triés. L'implémentation d'un HashSet est basée sur une HashMap. De suite, chaque objet sera insérer grâce à sa méthode HashCode et la place mémoire requise pour stocker la collection est immense. En revanche, l'accès mémoire est constant et, il n'y a pas besoin d'un algorithme de Welzl qui marche avec des permutations, puisque l'ordre des points n'est plus garanti dans la structure.\\
+
+\subsection{StackOverFlow vs Performance}
+Le StackOverFlow est une erreur qui survient lorsque vous excédez la mémoire disponible pour votre programme. Celle-ci arrive rapidement avec un HashSet puisque basée sur une HashMap.\\
+L'utilisation d'une ArrayList permet de prendre moins de place en mémoire, mais pour assurer l'efficacité de l'algorithme, il faut effectuer des permutations sur la liste. De plus rappelons que la mémoire nécessite d'être contigüe.\\
+La meilleure implémentation pour se garder d'un OverFlow est d'utiliser une LinkedList : Aucune mémoire gaspillée et la mémoire n'a pas besoin d'être contigüe ; en revanche les performances de l'algorithme en seront fortement dégradée.\\
+\\
+Il y a donc un fort compromis entre la sauvegarde de mémoire et la performance. Si la mémoire importe beaucoup, et que les instances sont petites, une LinkedList est envisageable. Au contraire si beaucoup de mémoire est disponible ou que les instances sont de taille raisonnable et que les performances importent beaucoup, mieux vaut se diriger vers un HashSet. Autrement, pour un système équilibré, une ArrayList conviendra tout à fait.\\
+
+\section{Résultats}
+\includegraphics{img/Moyenne-List-256x256.png}
+\subsection{En fonction du cercle Double, Float, Integer}
+\subsection{En fonction de l'algo}
+\subsection{En fonction des permutations}
+\section{Discussion}
+\subsection{Résultat obtenu/espéré}
+\subsection{Précision du cercle}
+\subsection{Utilité des permutations}
+\subsection{Peut-on faire mieux ?}
+\subsection{Extension vers $\mathcal{R}^d$}
+\subsection{}
+\section{Conclusion}
+\subsubsection{pseudo-code}
+
+On a besoin de savoir calculer un cercle avec deux points, trois points :
+Calcul du cercle avec deux points
+Calcul du cercle passant par trois points : Cercle circonscrit
+
+http://ise.tamu.edu/people/faculty/gaukler/601/Elzinga-Hearn.pdf
+http://euro.ecom.cmu.edu/people/faculty/mshamos/1975ClosestPoint.pdf
+
+\end{document}

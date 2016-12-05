@@ -1,0 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+int main (int argc, int **argv) {
+  int i = 1;
+  float pi = 0;
+  do {
+    pi += 1/i;
+    i += 2;
+    pi -= 1/i;
+    i += 2;
+  }while(p > (1/i))
+    }

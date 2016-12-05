@@ -1,0 +1,6 @@
+[
+  VAR x int;
+  IF (lt 23 42)
+    [ SET x (add 10 20) ]
+    [ SET x (sub 40 20) ]
+]

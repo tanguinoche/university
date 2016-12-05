@@ -1,0 +1,3 @@
+float min(float tab[], int taille);
+
+int indice_min(float tab[], int taille);
